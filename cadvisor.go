@@ -53,6 +53,8 @@ var allowDynamicHousekeeping = flag.Bool("allow_dynamic_housekeeping", true, "Wh
 
 var enableProfiling = flag.Bool("profiling", false, "Enable profiling via web interface host:port/debug/pprof/")
 
+var enableWebUI = flag.Bool("webui", true, "Enable web interface")
+
 var (
 	// Metrics to be ignored.
 	// Tcp metrics are ignored by default.
@@ -148,10 +150,15 @@ func main() {
 	// Install signal handler.
 	installSignalHandler(containerManager)
 
-	glog.Infof("Starting cAdvisor version: %s-%s on port %d", version.Info["version"], version.Info["revision"], *argPort)
+	if *enableWebUI {
+		glog.Infof("Starting cAdvisor version: %s-%s on port %d", version.Info["version"], version.Info["revision"], *argPort)
 
-	addr := fmt.Sprintf("%s:%d", *argIp, *argPort)
-	glog.Fatal(http.ListenAndServe(addr, mux))
+		addr := fmt.Sprintf("%s:%d", *argIp, *argPort)
+		glog.Fatal(http.ListenAndServe(addr, mux))
+	} else {
+		glog.Infof("Starting cAdvisor version: %s-%s without WebUI", version.Info["version"], version.Info["revision"])
+		for {}
+	}
 }
 
 func setMaxProcs() {
